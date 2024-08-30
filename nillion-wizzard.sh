@@ -91,13 +91,13 @@ check_time_limit() {
 run_final_step() {
     log "${COLOR_BLUE}🕒 Preparing for the final step...${COLOR_RESET}"
     
-    check_time_limit
 
     log "${COLOR_YELLOW}⏳ Waiting 20 minutes before executing the final command...${COLOR_RESET}"
-    sleep 1200  # 20 minutes wait
+
+     echo -e "${COLOR_YELLOW}Type block height (for example, 5160250):${COLOR_RESET}"
 
     log "${COLOR_BLUE}🚀 Launching the accuser process...${COLOR_RESET}"
-    screen -dmS nillion_accuser docker run -v $HOME/nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start 5098941
+    docker run -d -v $HOME/nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
     log "${COLOR_GREEN}🎉 The accuser process has been started in a screen session named 'nillion_accuser'.${COLOR_RESET}"
 
     echo $(date +%s) > $HOME/nillion/accuser/timestamp
