@@ -97,7 +97,7 @@ run_final_step() {
      echo -e "${COLOR_YELLOW}Type block height (for example, 5160250):${COLOR_RESET}"
 
     log "${COLOR_BLUE}🚀 Launching the accuser process...${COLOR_RESET}"
-    docker run -d -v $HOME/nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
+    docker run --name nillion -d -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
     log "${COLOR_GREEN}🎉 The accuser process has been started in a screen session named 'nillion_accuser'.${COLOR_RESET}"
 
     echo $(date +%s) > $HOME/nillion/accuser/timestamp
@@ -127,16 +127,39 @@ remove_node() {
     log "${COLOR_GREEN}✅ Node successfully removed.${COLOR_RESET}"
 }
 
-# Display help information
+# Function to display credentials from credentials.json
+display_credentials() {
+    log "${COLOR_BLUE}🔑 Displaying credentials from credentials.json...${COLOR_RESET}"
+    if [ -f "$HOME/nillion/accuser/credentials.json" ]; then
+        priv_key=$(jq -r '.priv_key' $HOME/nillion/accuser/credentials.json)
+        pub_key=$(jq -r '.pub_key' $HOME/nillion/accuser/credentials.json)
+        address=$(jq -r '.address' $HOME/nillion/accuser/credentials.json)
+
+        log "Private Key: ${COLOR_YELLOW}$priv_key${COLOR_RESET}"
+        log "Public Key: ${COLOR_YELLOW}$pub_key${COLOR_RESET}"
+        log "Address: ${COLOR_YELLOW}$address${COLOR_RESET}"
+    else
+        handle_error "credentials.json file not found."
+    fi
+}
+
+# Function to view logs from the Docker container
+view_logs() {
+    log "${COLOR_BLUE}📄 Viewing Docker container logs...${COLOR_RESET}"
+    docker logs -f nillion || handle_error "Failed to retrieve logs for the container."
+}
+
+# Updated menu options
 display_help() {
     echo -e "${COLOR_BLUE}🆘 Available Commands:${COLOR_RESET}"
     echo -e "${COLOR_GREEN}install${COLOR_RESET}   - Installs the node: prepares the server, installs Docker, and initializes the node."
-    echo -e "${COLOR_GREEN}remove${COLOR_RESET}    - Removes the node: deletes the node and all related files (with confirmation)."
     echo -e "${COLOR_GREEN}final${COLOR_RESET}     - Final step: runs the accuser process after waiting 20 minutes."
+    echo -e "${COLOR_GREEN}logs${COLOR_RESET}      - View logs: displays the logs from the running Docker container."
+    echo -e "${COLOR_GREEN}credentials${COLOR_RESET} - Display credentials: shows information from credentials.json."
     echo -e "${COLOR_GREEN}help${COLOR_RESET}      - Help: displays this message."
 }
 
-# Main control function
+# Updated main control function with new options
 main() {
     case $1 in
         install)
@@ -144,17 +167,20 @@ main() {
             check_docker_installed
             install_node
             ;;
-        remove)
-            remove_node
-            ;;
         final)
             run_final_step
+            ;;
+        logs)
+            view_logs
+            ;;
+        credentials)
+            display_credentials
             ;;
         help)
             display_help
             ;;
         *)
-            log "${COLOR_YELLOW}Usage: $0 {install|remove|final|help}${COLOR_RESET}"
+            log "${COLOR_YELLOW}Usage: $0 {install|final|logs|credentials|help}${COLOR_RESET}"
             ;;
     esac
 }
