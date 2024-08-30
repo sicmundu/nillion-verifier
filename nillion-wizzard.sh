@@ -96,6 +96,8 @@ run_final_step() {
 
      echo -e "${COLOR_YELLOW}Type block height (for example, 5160250):${COLOR_RESET}"
 
+     read block_start
+
     log "${COLOR_BLUE}🚀 Launching the accuser process...${COLOR_RESET}"
     docker run --name nillion -d -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
     log "${COLOR_GREEN}🎉 The accuser process has been started in a screen session named 'nillion_accuser'.${COLOR_RESET}"
