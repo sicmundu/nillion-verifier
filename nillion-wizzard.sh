@@ -61,11 +61,11 @@ install_docker() {
 # Install the Nillion Node
 install_node() {
     log "${COLOR_BLUE}🚀 Setting up the Nillion Node...${COLOR_RESET}"
-    docker pull nillion/retailtoken-accuser:v1.0.0 || handle_error "Failed to pull the Docker image for Nillion Node."
+    docker pull nillion/retailtoken-accuser:v1.0.1 || handle_error "Failed to pull the Docker image for Nillion Node."
     
     mkdir -p $HOME/nillion/accuser || handle_error "Failed to create directory for node data."
     
-    docker run -v $HOME/nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 initialise || handle_error "Failed to initialize the node."
+    docker run -v $HOME/nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.1 initialise || handle_error "Failed to initialize the node."
     
     log "${COLOR_GREEN}🎉 Node initialized! Copy your account_id and public_key, and register them on the website.${COLOR_RESET}"
     log "${COLOR_CYAN}📁 Credentials saved in $HOME/nillion/accuser/credentials.json.${COLOR_RESET}"
@@ -99,7 +99,7 @@ run_final_step() {
      read block_start
 
     log "${COLOR_BLUE}🚀 Launching the accuser process...${COLOR_RESET}"
-    docker run --name nillion -d -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.0 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
+    docker run --name nillion -d -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.1 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
     log "${COLOR_GREEN}🎉 The accuser process has been started in a screen session named 'nillion_accuser'.${COLOR_RESET}"
 
     echo $(date +%s) > $HOME/nillion/accuser/timestamp
@@ -124,7 +124,7 @@ remove_node() {
     confirm_removal
 
     log "${COLOR_RED}🗑️ Removing the node...${COLOR_RESET}"
-    docker rm -f $(docker ps -a -q --filter ancestor=nillion/retailtoken-accuser:v1.0.0) || handle_error "Failed to remove node containers."
+    docker rm -f $(docker ps -a -q --filter ancestor=nillion/retailtoken-accuser:v1.0.1) || handle_error "Failed to remove node containers."
     rm -rf $HOME/nillion || handle_error "Failed to remove the node data directory."
     log "${COLOR_GREEN}✅ Node successfully removed.${COLOR_RESET}"
 }
