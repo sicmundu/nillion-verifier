@@ -92,14 +92,11 @@ run_final_step() {
     log "${COLOR_BLUE}🕒 Preparing for the final step...${COLOR_RESET}"
     
 
-    log "${COLOR_YELLOW}⏳ Waiting 20 minutes before executing the final command...${COLOR_RESET}"
 
-     echo -e "${COLOR_YELLOW}Type block height (for example, 5160250):${COLOR_RESET}"
 
-     read block_start
 
     log "${COLOR_BLUE}🚀 Launching the accuser process...${COLOR_RESET}"
-    docker run --name nillion -d -v ./nillion/accuser:/var/tmp nillion/retailtoken-accuser:v1.0.1 accuse --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" --block-start $block_start
+    docker run --name nillion -d -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com"
     log "${COLOR_GREEN}🎉 The accuser process has been started in a screen session named 'nillion_accuser'.${COLOR_RESET}"
 
     echo $(date +%s) > $HOME/nillion/accuser/timestamp
@@ -151,6 +148,30 @@ view_logs() {
     docker logs -f nillion || handle_error "Failed to retrieve logs for the container."
 }
 
+# Node update function
+update_node() {
+    log "${COLOR_BLUE}🔄 Starting node update process...${COLOR_RESET}"
+    
+    # Stop and remove existing container
+    log "${COLOR_YELLOW}🛑 Stopping current container...${COLOR_RESET}"
+    docker stop nillion 2>/dev/null || true
+    docker rm nillion 2>/dev/null || true
+    
+    # Remove old image
+    log "${COLOR_YELLOW}🗑️ Removing old image...${COLOR_RESET}"
+    docker rmi nillion/verifier:v1.0.1 2>/dev/null || true
+    
+    # Clean unused resources
+    log "${COLOR_YELLOW}🧹 Cleaning system...${COLOR_RESET}"
+    docker system prune -f
+    
+    # Launch new container
+    log "${COLOR_BLUE}🚀 Launching updated node...${COLOR_RESET}"
+    docker run --name nillion -d -v ./nillion/verifier:/var/tmp nillion/verifier:v1.0.1 verify --rpc-endpoint "https://testnet-nillion-rpc.lavenderfive.com" || handle_error "Failed to start new container"
+    
+    log "${COLOR_GREEN}✅ Update completed successfully!${COLOR_RESET}"
+}
+
 # Updated menu options
 display_help() {
     echo -e "${COLOR_BLUE}🆘 Available Commands:${COLOR_RESET}"
@@ -158,6 +179,7 @@ display_help() {
     echo -e "${COLOR_GREEN}final${COLOR_RESET}     - Final step: runs the accuser process after waiting 20 minutes."
     echo -e "${COLOR_GREEN}logs${COLOR_RESET}      - View logs: displays the logs from the running Docker container."
     echo -e "${COLOR_GREEN}credentials${COLOR_RESET} - Display credentials: shows information from credentials.json."
+    echo -e "${COLOR_GREEN}update${COLOR_RESET}    - Update: restarts the node with a clean installation."
     echo -e "${COLOR_GREEN}help${COLOR_RESET}      - Help: displays this message."
 }
 
@@ -178,11 +200,14 @@ main() {
         credentials)
             display_credentials
             ;;
+        update)
+            update_node
+            ;;
         help)
             display_help
             ;;
         *)
-            log "${COLOR_YELLOW}Usage: $0 {install|final|logs|credentials|help}${COLOR_RESET}"
+            log "${COLOR_YELLOW}Usage: $0 {install|final|logs|credentials|update|help}${COLOR_RESET}"
             ;;
     esac
 }
