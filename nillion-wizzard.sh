@@ -68,7 +68,7 @@ install_node() {
     docker run -v $HOME/nillion/verifier:/var/tmp nillion/verifier:v1.0.1 initialise || handle_error "Failed to initialize the node."
     
     log "${COLOR_GREEN}🎉 Node initialized! Copy your account_id and public_key, and register them on the website.${COLOR_RESET}"
-    log "${COLOR_CYAN}📁 Credentials saved in $HOME/nillion/accuser/credentials.json.${COLOR_RESET}"
+    log "${COLOR_CYAN}📁 Credentials saved in $HOME/nillion/verifier/credentials.json.${COLOR_RESET}"
 
     log "${COLOR_YELLOW}🚰 IMPORTANT: Before proceeding, ensure you’ve received Nillion tokens to your wallet. Visit the faucet to get your tokens: https://faucet.testnet.nillion.com/${COLOR_RESET}"
 }
@@ -129,10 +129,10 @@ remove_node() {
 # Function to display credentials from credentials.json
 display_credentials() {
     log "${COLOR_BLUE}🔑 Displaying credentials from credentials.json...${COLOR_RESET}"
-    if [ -f "$HOME/nillion/accuser/credentials.json" ]; then
-        priv_key=$(jq -r '.priv_key' $HOME/nillion/accuser/credentials.json)
-        pub_key=$(jq -r '.pub_key' $HOME/nillion/accuser/credentials.json)
-        address=$(jq -r '.address' $HOME/nillion/accuser/credentials.json)
+    if [ -f "$HOME/nillion/verifier/credentials.json" ]; then
+        priv_key=$(jq -r '.priv_key' $HOME/nillion/verifier/credentials.json)
+        pub_key=$(jq -r '.pub_key' $HOME/nillion/verifier/credentials.json)
+        address=$(jq -r '.address' $HOME/nillion/verifier/credentials.json)
 
         log "Private Key: ${COLOR_YELLOW}$priv_key${COLOR_RESET}"
         log "Public Key: ${COLOR_YELLOW}$pub_key${COLOR_RESET}"
